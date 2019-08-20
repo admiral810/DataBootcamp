@@ -1,0 +1,245 @@
+Sub stock_basic()
+
+'variable for holding stock ticker
+Dim ticker As String
+
+'variable for holding stock volume
+Dim stock_volume As Double
+stock_volume = 0
+
+'track row of summary table
+Dim summary_table_row As Integer
+summary_table_row = 2
+
+'identify last row
+lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+
+'loop through stocks
+For i = 2 To lastrow
+    'check for change in ticker value
+    If Cells(i, 1).Value <> Cells(i + 1, 1).Value Then
+      
+      'set the ticker name
+      ticker = Cells(i, 1).Value
+      
+      'add to volume total
+      stock_volume = stock_volume + Cells(i, 7).Value
+      
+      'add stock ticker to summary table
+      Range("J" & summary_table_row).Value = ticker
+      
+      'add total volume to summary table
+      Range("K" & summary_table_row).Value = stock_volume
+      
+      'increment up the summary table row by 1
+      summary_table_row = summary_table_row + 1
+      
+      'reset the stock volume total
+      stock_volume = 0
+      
+    'no change in ticker from cell to cell
+    Else
+      
+      'add to the volume total
+      stock_volume = stock_volume + Cells(i, 7)
+      
+    End If
+    
+Next i
+
+'populate the summary table header rows
+Range("J1").Value = "Ticker"
+Range("K1").Value = "Total Volume"
+        
+
+End Sub
+
+
+Sub stock_moderate()
+
+'variable for holding stock ticker
+Dim ticker As String
+
+'variable for holding stock volume
+Dim stock_volume As Double
+stock_volume = 0
+
+'varialble for start of year open and end of year close and change metrics
+Dim year_open As Double
+Dim year_close As Double
+Dim net_change As Double
+Dim percent_change As Double
+
+
+'track row of summary table
+Dim summary_table_row As Integer
+summary_table_row = 2
+
+'identify last row
+lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+
+'loop through stocks
+For i = 2 To lastrow
+
+'check if ticker value just changed
+    If Cells(i, 1).Value <> Cells(i - 1, 1).Value Then
+      
+      'establish the year open
+      year_open = Cells(i, 3).Value
+      
+      'add year open to summary table
+      Range("R" & summary_table_row).Value = year_open
+    
+'check if ticker value about to change
+    ElseIf Cells(i, 1).Value <> Cells(i + 1, 1).Value Then
+      
+      'set the ticker name
+      ticker = Cells(i, 1).Value
+      
+      'add to volume total
+      stock_volume = stock_volume + Cells(i, 7).Value
+      
+      'add stock ticker to summary table
+      Range("N" & summary_table_row).Value = ticker
+      
+      'add total volume to summary table
+      Range("Q" & summary_table_row).Value = stock_volume
+      
+      'establish the year close
+      year_close = Cells(i, 6).Value
+      
+      'add year close to summary table
+      Range("S" & summary_table_row).Value = year_close
+      
+      'calculate net change
+      net_change = year_close - year_open
+      
+      'add net_change to summary table
+      Range("O" & summary_table_row).Value = net_change
+      
+      'calculate percent change accomodating for when the open is zero
+        If year_open <> 0 Then
+            percent_change = (year_close / year_open) - 1
+            
+        'Only add percent change to tickers that had an opening value <> 0
+        Range("P" & summary_table_row).Value = percent_change
+        Range("P" & summary_table_row).NumberFormat = "%0.00"
+          
+          'format cells based on positive or negative change
+          If percent_change > 0 Then
+          Range("P" & summary_table_row).Interior.Color = vbGreen
+          
+          ElseIf percent_change < 0 Then
+          Range("P" & summary_table_row).Interior.Color = vbRed
+          
+          Else
+          Range("P" & summary_table_row).Interior.Color = vbWhite
+            
+          End If 'ends the color formatting if statement
+                  
+        End If 'ends the accomodating for zero, divided by zero problem
+      
+     
+'**STEPS TO RESET COUNTERS**
+      
+      'increment up the summary table row by 1
+      summary_table_row = summary_table_row + 1
+      
+      'reset the stock volume total
+      stock_volume = 0
+      
+      
+      
+    'no change in ticker from cell to cell, keep running sum of stock_volume
+    Else
+      
+      'add to the volume total
+      stock_volume = stock_volume + Cells(i, 7)
+      
+    End If
+    
+Next i
+
+'populate the summary table header rows
+Range("N1").Value = "Ticker"
+Range("O1").Value = "Yearly Change"
+Range("P1").Value = "Percent Change"
+Range("Q1").Value = "Total Volume"
+Range("R1").Value = "Start of Year Open"
+Range("S1").Value = "End of Year Close"
+
+
+'******
+'Hard portion
+'solution will also be able to return the stock with the "Greatest % increase", "Greatest % Decrease" and "Greatest total volume"
+'decided to loop through summary table as opposed to embedding in existing loop (which may be possible)
+'******
+
+'create varaibles for "leaders" summary table
+Dim largest_growth As Double
+Dim largest_decline As Double
+Dim most_volume As Double
+Dim growth_ticker As String
+Dim decline_ticker As String
+Dim most_volume_ticker As String
+
+'set starting values for each variable, this is done in case the first row is a leader in any category
+largest_growth = Range("P2")
+largest_decline = Range("P2")
+most_volume = Range("Q2")
+growth_ticker = Range("N2")
+decline_ticker = Range("N2")
+most_volume_ticker = Range("N2")
+
+'identify last row of summary table
+lastrowsummary = Cells(Rows.Count, 14).End(xlUp).Row
+
+'loop through summary table to get each leader in metric categories
+For j = 2 To lastrowsummary
+
+    'find out if we get a new largest growth value
+    If Cells(j, 16) > largest_growth Then
+      largest_growth = Cells(j, 16).Value
+      growth_ticker = Cells(j, 14).Value
+    End If
+    
+    'find out if we get a new largest decline value
+    If Cells(j, 16) < largest_decline Then
+      largest_decline = Cells(j, 16).Value
+      decline_ticker = Cells(j, 14).Value
+    End If
+    
+    'find out if we get a new largest volume
+    If Cells(j, 17) > most_volume Then
+      most_volume = Cells(j, 17).Value
+      most_volume_ticker = Cells(j, 14)
+    End If
+    
+    
+Next j
+
+'Insert labels
+Range("U2").Value = "Greatest % Increase"
+Range("U3").Value = "Greatest % Decrease"
+Range("U4").Value = "Gretest Total Volume"
+Range("V1").Value = "Ticker"
+Range("W1").Value = "Value"
+
+'insert tickers
+Range("V2").Value = growth_ticker
+Range("V3").Value = decline_ticker
+Range("V4").Value = most_volume_ticker
+
+'insert values, change growth/decline to percentages
+Range("W2").Value = largest_growth
+Range("W2").NumberFormat = "%0.00"
+Range("W3").Value = largest_decline
+Range("W3").NumberFormat = "%0.00"
+Range("W4").Value = most_volume
+
+'friendly message the the TA checking this :)
+MsgBox ("Thanks for looking at my homework have a nice day!")
+  
+
+End Sub
+
