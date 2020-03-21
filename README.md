@@ -1,3 +1,2 @@
-# DataBootcamp
-Stocks VBA week two homework
-Includes link to macro enabled excel doc, screenshots, and code.
+# Stocks VBA Loops
+Too large to post in github repo, those has a link to a macro enabled excel doc, screenshots, and code.
